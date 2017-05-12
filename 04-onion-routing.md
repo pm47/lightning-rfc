@@ -491,8 +491,7 @@ channel (eg. peer unresponsive, channel capacity reached):
 
 1. type: UPDATE|7 (`temporary_channel_failure`)
 2. data:
-   * [`2`:`len`]
-   * [`len`:`channel_update`]
+   * [`92`:`channel_update`]
 
 If an otherwise unspecified permanent error occurs for the outgoing
 channel (eg. channel (recently) closed):
@@ -515,8 +514,7 @@ the outgoing channel:
 1. type: UPDATE|11 (`amount_below_minimum`)
 2. data:
    * [`4`:`htlc_msat`]
-   * [`2`:`len`]
-   * [`len`:`channel_update`]
+   * [`92`:`channel_update`]
 
 If the HTLC does not pay sufficient fee, we tell them the amount of
 the incoming HTLC and the current channel setting for the outgoing
@@ -525,8 +523,7 @@ channel:
 1. type: UPDATE|12 (`fee_insufficient`)
 2. data:
    * [`4`:`htlc_msat`]
-   * [`2`:`len`]
-   * [`len`:`channel_update`]
+   * [`92`:`channel_update`]
 
 If `outgoing_cltv_value` does not match the `update_add_htlc`'s
 `cltv_expiry` minus `cltv_expiry_delta` for the outgoing channel, we
@@ -536,16 +533,14 @@ outgoing channel:
 1. type: UPDATE|13 (`incorrect_cltv_expiry`)
 2. data:
    * [`4`:`cltv_expiry`]
-   * [`2`:`len`]
-   * [`len`:`channel_update`]
+   * [`92`:`channel_update`]
 
 If the ctlv-expiry is too near, we tell them the the current channel
 setting for the outgoing channel:
 
 1. type: UPDATE|14 (`expiry_too_soon`)
 2. data:
-   * [`2`:`len`]
-   * [`len`:`channel_update`]
+   * [`92`:`channel_update`]
 
 The final node may return one of the following errors, intermediate
 nodes MUST NOT:
