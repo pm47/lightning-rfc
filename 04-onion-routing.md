@@ -446,144 +446,44 @@ The top byte of `failure_code` can be read as a set of flags:
 
 Any node MAY return one of the following errors:
 
-If the `realm` byte is unknown:
 
-1. type: PERM|1 (`invalid_realm`)
+| Type                      | Name             | Data | Description                                           |
+|---------------------------|------------------|------|-------------------------------------------------|
+| PERM &#124; 1             | `invalid_realm`  | | the `realm` byte is unknown |
+| NODE &#124; 2             | `temporary_node_failure` | | an otherwise unspecified transient error occurs for the entire node |
+| PERM &#124; NODE &#124; 2 | `permanent_node_failure` | | an otherwise unspecified permanent error occurs for the entire node |
+| PERM &#124; NODE &#124; 3 | `required_node_feature_missing` | | a node has requirement advertised in its `node_announcement` `features` which were not present in the onion |
+| PERM &#124; NODE &#124; 3 | `required_node_feature_missing` | | a node has requirement advertised in its `node_announcement` `features` which were not present in the onion |
 
-If an otherwise unspecified transient error occurs for the entire
-node:
-
-1. type: NODE|2 (`temporary_node_failure`)
-
-If an otherwise unspecified permanent error occurs for the entire
-node:
-
-1. type: PERM|NODE|2 (`permanent_node_failure`)
-
-If a node has requirement advertised in its `node_announcement`
-`features` which were not present in the onion:
-
-1. type: PERM|NODE|3 (`required_node_feature_missing`)
 
 A forwarding node MAY return one of the following errors, the final
 node MUST NOT:
 
-If the onion `version` byte is unknown:
-
-1. type: BADONION|PERM|4 (`invalid_onion_version`)
-2. data:
-   * [`32`:`sha256_of_onion`]
-
-If the onion HMAC is incorrect:
-
-1. type: BADONION|PERM|5 (`invalid_onion_hmac`)
-2. data:
-   * [`32`:`sha256_of_onion`]
-
-If the ephemeral key in the onion is unparsable:
-
-1. type: BADONION|PERM|6 (`invalid_onion_key`)
-2. data:
-   * [`32`:`sha256_of_onion`]
-
-If an otherwise unspecified transient error occurs for the outgoing
-channel (eg. channel capacity reached, too many in-flight htlcs):
-
-1. type: UPDATE|7 (`temporary_channel_failure`)
-2. data:
-   * [`92`:`channel_update`]
-
-If an otherwise unspecified permanent error occurs for the outgoing
-channel (eg. channel (recently) closed):
-
-1. type: PERM|8 (`permanent_channel_failure`)
-
-If the outgoing channel has requirement advertised in its
-`channel_announcement` `features` which were not present in the onion:
-
-1. type: PERM|9 (`required_channel_feature_missing`)
-
-	If the next peer specified by the onion is not known:
-
-1. type: PERM|10 (`unknown_next_peer`)
-
-If the HTLC does not reach the current minimum amount, we tell them
-the amount of the incoming HTLC and the current channel setting for
-the outgoing channel:
-
-1. type: UPDATE|11 (`amount_below_minimum`)
-2. data:
-   * [`4`:`htlc_msat`]
-   * [`92`:`channel_update`]
-
-If the HTLC does not pay sufficient fee, we tell them the amount of
-the incoming HTLC and the current channel setting for the outgoing
-channel:
-
-1. type: UPDATE|12 (`fee_insufficient`)
-2. data:
-   * [`4`:`htlc_msat`]
-   * [`92`:`channel_update`]
-
-If `outgoing_cltv_value` does not match the `update_add_htlc`'s
-`cltv_expiry` minus `cltv_expiry_delta` for the outgoing channel, we
-tell them the `cltv_expiry` and the current channel setting for the
-outgoing channel:
-
-1. type: UPDATE|13 (`incorrect_cltv_expiry`)
-2. data:
-   * [`4`:`cltv_expiry`]
-   * [`92`:`channel_update`]
-
-If the ctlv-expiry is too near, we tell them the the current channel
-setting for the outgoing channel:
-
-1. type: UPDATE|14 (`expiry_too_soon`)
-2. data:
-   * [`92`:`channel_update`]
-   
-If the channel is disabled, we tell them the the current channel
-setting for the outgoing channel:
-   
-1. type: UPDATE|20 (`channel_disabled`)
-2. data:
-   * [`2`: `flags`]
-   * [`92`:`channel_update`]
+| Type                          | Name             | Data | Description                                           |
+|-------------------------------|------------------|-----------|--------------------------------------------|
+| BADONION &#124; PERM &#124; 4 | `invalid_onion_version` | <ul><li>[`32`:`sha256_of_onion`]</li></ul> | the onion `version` byte is unknown |
+| BADONION &#124; PERM &#124; 5 | `invalid_onion_hmac` | <ul><li>[`32`:`sha256_of_onion`]</li></ul> | the onion HMAC is incorrect |
+| BADONION &#124; PERM &#124; 6 | `invalid_onion_key` | <ul><li>[`32`:`sha256_of_onion`]</li></ul> | the ephemeral key in the onion is unparsable |
+| UPDATE &#124; 7               | `temporary_channel_failure` | <ul><li>[`92`:`channel_update`]</li></ul> | an otherwise unspecified transient error occurs for the outgoing channel (eg. channel capacity reached, too many in-flight htlcs) |
+| PERM &#124; 8                 | `permanent_channel_failure` | | an otherwise unspecified permanent error occurs for the outgoing channel (eg. channel (recently) closed) |
+| PERM &#124; 9                 | `required_channel_feature_missing` | | the outgoing channel has requirement advertised in its `channel_announcement` `features` which were not present in the onion |
+| PERM &#124; 10                | `unknown_next_peer` | | the next peer specified by the onion is not known |
+| UPDATE &#124; 11              | `amount_below_minimum` | <ul><li>[`4`:`htlc_msat`]</li><li>[`92`:`channel_update`]</li></ul> | the HTLC does not reach the current minimum amount, we tell them the amount of the incoming HTLC and the current channel setting for the outgoing channel |
+| UPDATE &#124; 12              | `fee_insufficient` | <ul><li>[`4`:`htlc_msat`]</li><li>[`92`:`channel_update`]</li></ul> | the HTLC does not pay sufficient fee, we tell them the amount of the incoming HTLC and the current channel setting for the outgoing channel |
+| UPDATE &#124; 13              | `incorrect_cltv_expiry` | <ul><li>[`4`:`cltv_expiry`]</li><li>[`92`:`channel_update`]</li></ul> | `outgoing_cltv_value` does not match the `update_add_htlc`'s `cltv_expiry` minus `cltv_expiry_delta` for the outgoing channel, we tell them the `cltv_expiry` and the current channel setting for the outgoing channel |
+| UPDATE &#124; 14              | `expiry_too_soon` | <ul><li>[`92`:`channel_update`]</li></ul> | the ctlv-expiry is too near, we tell them the the current channel setting for the outgoing channel |
+| UPDATE &#124; 20              | `channel_disabled` | <ul><li>[`2`:`flags`]</li><li>[`92`:`channel_update`]</li></ul> | the channel is disabled, we tell them the the current channel setting for the outgoing channel |
 
 The final node may return one of the following errors, intermediate
 nodes MUST NOT:
 
-If the payment hash has already been paid, the final node MAY treat
-the payment hash as unknown, or may succeed in accepting the HTLC.
-If the payment hash is unknown, the final node MUST fail the HTLC:
-
-1. type: PERM|15 (`unknown_payment_hash`)
-
-If the amount paid is less than the amount expected, the final node
-MUST fail the HTLC.  If the amount paid is more than twice the amount
-expected, the final node SHOULD fail the HTLC.  This allows the sender
-to reduce information leakage by altering the amount, without allowing
-accidental gross overpayment:
-
-1. type: PERM|16 (`incorrect_payment_amount`)
-
-If the `cltv_expiry` is too low, the final node MUST fail the HTLC:
-
-1. type: 17 (`final_expiry_too_soon`)
-
-If the `outgoing_cltv_value` does not match the `ctlv_expiry` of the
-HTLC at the final hop:
-
-1. type: 18 (`final_incorrect_cltv_expiry`)
-2. data:
-   * [`4`:`cltv_expiry`]
-
-If the `amt_to_forward` does not match the `incoming_htlc_amt` of
-the HTLC at the final hop:
-
-1. type: 19 (`final_incorrect_htlc_amount`)
-2. data:
-   * [`4`:`incoming_htlc_amt`]
+| Type           | Name             | Data | Description                                           |
+|----------------|------------------|-----------|--------------------------------------------|
+| PERM &#124; 15 | `unknown_payment_hash` | | the payment hash has already been paid, the final node MAY treat the payment hash as unknown, or may succeed in accepting the HTLC. If the payment hash is unknown, the final node MUST fail the HTLC |
+| PERM &#124; 16 | `incorrect_payment_amount` | | the amount paid is less than the amount expected, the final node MUST fail the HTLC.  If the amount paid is more than twice the amount expected, the final node SHOULD fail the HTLC.  This allows the sender to reduce information leakage by altering the amount, without allowing accidental gross overpayment |
+| 17             | `final_expiry_too_soon` | | the `cltv_expiry` is too low, the final node MUST fail the HTLC |
+| 18             | `final_incorrect_cltv_expiry` | <ul><li>[`4`:`cltv_expiry`]</li></ul> | the `outgoing_cltv_value` does not match the `ctlv_expiry` of the HTLC at the final hop |
+| 19             | `final_incorrect_htlc_amount` | <ul><li>[`4`:`incoming_htlc_amt`]</li></ul> | the `amt_to_forward` does not match the `incoming_htlc_amt` of the HTLC at the final hop |
 
 ### Receiving Failure Codes
 
